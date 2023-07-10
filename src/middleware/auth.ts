@@ -2,7 +2,6 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../modules/users/user-model";
 import { errorMsg, constants } from "../constant";
 import { Request, Response, NextFunction } from "express";
-import { errorResp } from "../utils/response";
 
 export const auth = async (
   req: Request,
@@ -28,18 +27,4 @@ export const auth = async (
   } catch (e) {
     resp.status(401).send({ error: errorMsg.unauthorized });
   }
-};
-
-export const authRoles = (role:string) => {
-  return (req:Request, resp:Response, next:NextFunction) => {
-    if (!role.includes(req.body.user.role)) {
-      return next(
-       errorResp(
-          resp,
-          403,`Role: ${req.body.user.role} is not allowed to access this resource `
-        )
-      );
-    }
-    next();
-  };
 };

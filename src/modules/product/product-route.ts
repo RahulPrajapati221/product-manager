@@ -1,5 +1,5 @@
 import express from "express";
-import { auth, authRoles } from "../../middleware/auth";
+import { auth } from "../../middleware/auth";
 import {
   createProduct,
   getAllProduct,
@@ -10,15 +10,15 @@ import {
 const router = express.Router();
 
 //Create Products
-router.post("/new", createProduct);
+router.post("/new", auth, createProduct);
 
 //Get all Products
-router.route("/").get(auth, authRoles("admin"), getAllProduct);
+router.route("/").get(auth, getAllProduct);
 
 router
   .route("/:id")
-  .get(getProductById)
-  .patch(updateProduct)
-  .delete(deleteProduct);
+  .get(auth, getProductById)
+  .patch(auth, updateProduct)
+  .delete(auth, deleteProduct);
 
 export default router;

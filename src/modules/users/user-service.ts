@@ -11,7 +11,7 @@ export const createUser = async (reqBody: IUser): Promise<VerifyUserType> => {
 };
 
 export const updateUserById = async (
-  user: IUser,
+  user: any,
   reqBody: IUser
 ): Promise<IUser | null> => {
   const updatedUser = await User.findByIdAndUpdate(user, reqBody, {

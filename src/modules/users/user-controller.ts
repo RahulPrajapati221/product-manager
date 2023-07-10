@@ -9,11 +9,13 @@ import { Request, Response } from "express";
 import { successMsg, errorMsg, statusCodes, constants } from "../../constant";
 import { successResp, errorResp } from "../../utils/response";
 import User from "./user-model";
+import { encryptPass } from "../../utils/preOperation";
 
 //Register user
 export const registerUser = async (req: Request, resp: Response) => {
   try {
-    const user = await createUser(req.body);
+    const userPreData: any = await encryptPass(req.body);
+    const user = await createUser(userPreData);
     return successResp(resp, statusCodes.createdCode, {
       data: user,
       message: successMsg.created,
@@ -28,6 +30,7 @@ export const loginUser = async (req: Request, resp: Response) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await findUser(email, password);
+    // const { tokens, ...data } = user;
     return successResp(resp, statusCodes.successCode, {
       data: { user, token },
       message: successMsg.login,
@@ -57,7 +60,7 @@ export const logOutUser = async (req: Request, resp: Response) => {
     user.tokens = user.tokens.filter((token: { token: string }) => {
       return token.token !== req.body.token;
     });
-    await User.updateOne(user);
+    await user.updateOne(user);
     return successResp(resp, statusCodes.successCode, {
       data: user,
       message: successMsg.Logout,
@@ -85,6 +88,7 @@ export const logOutAll = async (req: Request, resp: Response) => {
 // update user
 export const updateUser = async (req: Request, resp: Response) => {
   const updates = req.body.update;
+  const preUserData = await encryptPass(updates);
   const allowedUpdates = ["name", "email", "password", "age"];
 
   const invalidField = validUpdate(updates, allowedUpdates);
@@ -97,7 +101,7 @@ export const updateUser = async (req: Request, resp: Response) => {
         errorMsg.notFound(constants.user)
       );
     }
-    const User = await updateUserById(user, updates);
+    const User = await updateUserById(user, preUserData);
     return successResp(resp, statusCodes.createdCode, {
       data: { Alert: errorMsg.invalidUpdate(invalidField), User },
       message: successMsg.created,

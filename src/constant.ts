@@ -12,6 +12,7 @@ export const statusCodes = {
   unauthorizedCode: 401,
   notFoundCode: 404,
   serverErrorCode: 500,
+  forbidden:403,
 };
 
 export const errorMsg = {
@@ -27,6 +28,7 @@ export const errorMsg = {
     !`${value}`
       ? `All fields are correct`
       : `( ' ${value} ' ) are invalid fields`,
+  authRole:(value: string) => `Role: ${value} is not allowed to access this resource`
 };
 
 export const constants = {

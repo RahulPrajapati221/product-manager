@@ -1,13 +1,15 @@
-import { Document, ObjectId } from "mongoose";
+import { Document, Schema } from "mongoose";
 
 export interface IProduct {
   name: string;
   description: string;
   price: number;
-  category:string;
-  ratings:number;
-  sellerId:ObjectId;
+  category: string;
+  ratings: number;
+  quantity:number;
+  available:Boolean;
+  sellerId: Schema.Types.ObjectId;
   createdAt: Date;
 }
 
-export interface IUserModel extends IProduct, Document {}
+export interface IProductModel extends IProduct, Document {}

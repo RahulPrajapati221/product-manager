@@ -4,16 +4,21 @@ import { successResp, errorResp } from "../../utils/response";
 import {
   allProduct,
   deleteProductById,
-  getSingleProduct,
+  findProduct,
   newProduct,
+  findSellerProduct,
   updateProductById,
 } from "./product-service";
-import { IProduct } from "./product-type";
+import { validUpdate } from "../../utils/validUpdateField";
 
 //Create Product
 export const createProduct = async (req: Request, resp: Response) => {
   try {
-    const reqBody: IProduct = req.body;
+    const reqBody = {
+      ...req.body,
+      sellerId: req.body.user._id,
+    };
+    console.log(reqBody);
     const product = await newProduct(reqBody);
     return successResp(resp, statusCodes.createdCode, {
       data: product,
@@ -24,14 +29,24 @@ export const createProduct = async (req: Request, resp: Response) => {
   }
 };
 
-//Get All Products----SuperAdmin
+//Get All Products----Admin
 export const getAllProduct = async (req: Request, resp: Response) => {
   try {
-    const products = await allProduct();
-    return successResp(resp, statusCodes.successCode, {
-      data: products,
-      message: successMsg.success,
-    });
+    const role = req.body.user.role;
+    const products: any = await allProduct();
+    if (role === "user") {
+      const { sellerId, createdAt, ...data } = products;
+      return successResp(resp, statusCodes.successCode, {
+        data: data,
+        message: successMsg.success,
+      });
+    } else if (role === "admin") {
+      const sellerProduct = await findSellerProduct(req.body.user._id);
+      return successResp(resp, statusCodes.successCode, {
+        data: sellerProduct,
+        message: successMsg.success,
+      });
+    }
   } catch (err) {
     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
   }
@@ -40,8 +55,12 @@ export const getAllProduct = async (req: Request, resp: Response) => {
 // get Product by ID
 export const getProductById = async (req: Request, resp: Response) => {
   try {
-    const productId = req.params.id;
-    const Product = await getSingleProduct(productId);
+    const productId = {
+      _id: req.params.id,
+      sellerId: req.body.user._id,
+    };
+    console.log(productId);
+    const Product = await findProduct(productId);
     return successResp(resp, statusCodes.successCode, {
       data: { Product },
       message: successMsg.created,
@@ -53,12 +72,30 @@ export const getProductById = async (req: Request, resp: Response) => {
 
 // update Product
 export const updateProduct = async (req: Request, resp: Response) => {
+  const { role, id } = req.body.user;
+  const updates = req.body.update;
+  const allowedUpdates = ["name", "description", "price", "rating"];
+
+  const invalidField = validUpdate(updates, allowedUpdates);
   try {
-    const productId = req.params.id;
-    const updates = req.body.update;
-    const Product = await updateProductById(productId, updates);
+    if (role === "user") {
+      return errorResp(resp, statusCodes.forbidden, errorMsg.authRole(role));
+    }
+    const verifyId = {
+      _id: req.params.id,
+      sellerId: id,
+    };
+    const product = await findProduct(verifyId);
+    if (!product) {
+      return errorResp(
+        resp,
+        statusCodes.notFoundCode,
+        errorMsg.notFound(constants.product)
+      );
+    }
+    const Product = await updateProductById(verifyId, updates);
     return successResp(resp, statusCodes.createdCode, {
-      data: { Product },
+      data: { alert: errorMsg.invalidUpdate(invalidField), Product },
       message: successMsg.created,
     });
   } catch (err) {
@@ -68,8 +105,16 @@ export const updateProduct = async (req: Request, resp: Response) => {
 
 // delete Product
 export const deleteProduct = async (req: Request, resp: Response) => {
+  const { role, id } = req.body.user;
   try {
-    const deletedProduct = await deleteProductById(req.params.id);
+    if (role === "user") {
+      return errorResp(resp, statusCodes.forbidden, errorMsg.authRole(role));
+    }
+    const verifyId = {
+      _id: req.params.id,
+      sellerId: id,
+    };
+    const deletedProduct = await deleteProductById(verifyId);
     if (!deletedProduct) {
       return errorResp(
         resp,

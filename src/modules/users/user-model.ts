@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 import validator from "validator";
-import bcrypt from "bcryptjs";
 import { errorMsg } from "../../constant";
 import { IUser } from "./user-type";
 
@@ -34,9 +33,10 @@ const userSchema = new Schema<IUser>(
         }
       },
     },
-    role:{
-      type:String,
-      default:"user",
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
     createdAt: {
       type: Date,
@@ -56,24 +56,15 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-userSchema.methods.toJSON = function () {
-  const user = this;
-  const userObject = user.toObject();
+// userSchema.methods.toJSON = function () {
+//   const user = this;
+//   const userObject = user.toObject();
 
-  delete userObject.password;
-  delete userObject.tokens;
+//   delete userObject.password;
+//   delete userObject.tokens;
 
-  return userObject;
-};
-
-// Hash the plain text password before saving
-userSchema.pre("save", async function (next) {
-  const user = this;
-  if (user.isModified("password")) {
-    user.password = await bcrypt.hash(user.password, 10);
-  }
-  next();
-});
+//   return userObject;
+// };
 
 const User = model<IUser>("User", userSchema);
 
