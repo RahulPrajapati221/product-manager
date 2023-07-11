@@ -35,3 +35,13 @@ export const deleteUserById = async (user_id: string) => {
   });
   return deletedUser;
 };
+
+export const getUsers = async () => {
+  const user = await User.find();
+  return user;
+};
+
+export const deleteUserAdmin = async (userId: string) => {
+  const user = await User.findByIdAndDelete({ _id: userId });
+  return user;
+};

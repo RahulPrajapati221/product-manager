@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import validator from "validator";
 import { errorMsg } from "../../constant";
 import { IUser } from "./user-type";
+import { Role } from "./user-type";
 
 const userSchema = new Schema<IUser>(
   {
@@ -35,8 +36,8 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: Role,
+      required: true,
     },
     createdAt: {
       type: Date,

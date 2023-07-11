@@ -10,15 +10,20 @@ import {
   updateProductById,
 } from "./product-service";
 import { validUpdate } from "../../utils/validUpdateField";
+import { IProduct } from "./product-type";
 
 //Create Product
 export const createProduct = async (req: Request, resp: Response) => {
   try {
+    const { role, _id } = req.body.user;
+    if (role === "user") {
+      return errorResp(resp, statusCodes.forbidden, errorMsg.authRole(role));
+    }
     const reqBody = {
       ...req.body,
-      sellerId: req.body.user._id,
+      sellerId: _id,
     };
-    console.log(reqBody);
+
     const product = await newProduct(reqBody);
     return successResp(resp, statusCodes.createdCode, {
       data: product,
@@ -40,13 +45,12 @@ export const getAllProduct = async (req: Request, resp: Response) => {
         data: data,
         message: successMsg.success,
       });
-    } else if (role === "admin") {
-      const sellerProduct = await findSellerProduct(req.body.user._id);
-      return successResp(resp, statusCodes.successCode, {
-        data: sellerProduct,
-        message: successMsg.success,
-      });
     }
+    const sellerProduct = await findSellerProduct(req.body.user._id);
+    return successResp(resp, statusCodes.successCode, {
+      data: sellerProduct,
+      message: successMsg.success,
+    });
   } catch (err) {
     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
   }
@@ -59,7 +63,6 @@ export const getProductById = async (req: Request, resp: Response) => {
       _id: req.params.id,
       sellerId: req.body.user._id,
     };
-    console.log(productId);
     const Product = await findProduct(productId);
     return successResp(resp, statusCodes.successCode, {
       data: { Product },
@@ -72,15 +75,14 @@ export const getProductById = async (req: Request, resp: Response) => {
 
 // update Product
 export const updateProduct = async (req: Request, resp: Response) => {
-  const { role, id } = req.body.user;
-  const updates = req.body.update;
-  const allowedUpdates = ["name", "description", "price", "rating"];
-
-  const invalidField = validUpdate(updates, allowedUpdates);
   try {
+    const { role, id } = req.body.user;
     if (role === "user") {
       return errorResp(resp, statusCodes.forbidden, errorMsg.authRole(role));
     }
+    const updates = req.body.update;
+    const allowedUpdates = ["name", "description", "price", "rating"];
+    const invalidField = validUpdate(updates, allowedUpdates);
     const verifyId = {
       _id: req.params.id,
       sellerId: id,

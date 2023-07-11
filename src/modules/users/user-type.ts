@@ -6,7 +6,7 @@ export interface IUser {
   password: string;
   role: string;
   createdAt: Date;
-  tokens: { token: string }[];
+  tokens?: { token: string }[];
 }
 
 export interface IUserModel extends IUser, Document {}
@@ -14,4 +14,10 @@ export interface IUserModel extends IUser, Document {}
 export interface VerifyUserType {
   user: IUser;
   token: string;
+}
+
+export enum Role {
+  ADMIN = "admin",
+  USER = "user",
+  SUPERADMIN = "superAdmin",
 }

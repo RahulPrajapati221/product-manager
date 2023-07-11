@@ -3,12 +3,13 @@ import {
   findUser,
   updateUserById,
   deleteUserById,
+  getUsers,
+  deleteUserAdmin,
 } from "./user-service";
 import { validUpdate } from "../../utils/validUpdateField";
 import { Request, Response } from "express";
 import { successMsg, errorMsg, statusCodes, constants } from "../../constant";
 import { successResp, errorResp } from "../../utils/response";
-import User from "./user-model";
 import { encryptPass } from "../../utils/preOperation";
 
 //Register user
@@ -30,7 +31,6 @@ export const loginUser = async (req: Request, resp: Response) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await findUser(email, password);
-    // const { tokens, ...data } = user;
     return successResp(resp, statusCodes.successCode, {
       data: { user, token },
       message: successMsg.login,
@@ -53,43 +53,43 @@ export const userProfile = async (req: Request, resp: Response) => {
   }
 };
 
-// logout user
-export const logOutUser = async (req: Request, resp: Response) => {
-  try {
-    const user = req.body.user;
-    user.tokens = user.tokens.filter((token: { token: string }) => {
-      return token.token !== req.body.token;
-    });
-    await user.updateOne(user);
-    return successResp(resp, statusCodes.successCode, {
-      data: user,
-      message: successMsg.Logout,
-    });
-  } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
-  }
-};
+// // logout user
+// export const logOutUser = async (req: Request, resp: Response) => {
+//   try {
+//     const user = req.body.user;
+//     user.tokens = user.tokens.filter((token: { token: string }) => {
+//       return token.token !== req.body.token;
+//     });
+//     await user.updateOne(user);
+//     return successResp(resp, statusCodes.successCode, {
+//       data: user,
+//       message: successMsg.Logout,
+//     });
+//   } catch (err) {
+//     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+//   }
+// };
 
-// logout user from all sessions
-export const logOutAll = async (req: Request, resp: Response) => {
-  try {
-    const user = req.body.user;
-    user.tokens = [];
-    await user.updateOne(user);
-    return successResp(resp, statusCodes.successCode, {
-      data: user,
-      message: successMsg.Logout,
-    });
-  } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
-  }
-};
+// // logout user from all sessions
+// export const logOutAll = async (req: Request, resp: Response) => {
+//   try {
+//     const user = req.body.user;
+//     user.tokens = [];
+//     await user.updateOne(user);
+//     return successResp(resp, statusCodes.successCode, {
+//       data: user,
+//       message: successMsg.Logout,
+//     });
+//   } catch (err) {
+//     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+//   }
+// };
 
 // update user
 export const updateUser = async (req: Request, resp: Response) => {
   const updates = req.body.update;
   const preUserData = await encryptPass(updates);
-  const allowedUpdates = ["name", "email", "password", "age"];
+  const allowedUpdates = ["name", "email", "password", "role"];
 
   const invalidField = validUpdate(updates, allowedUpdates);
   try {
@@ -117,6 +117,32 @@ export const deleteUser = async (req: Request, resp: Response) => {
     const deletedUser = await deleteUserById(req.body.user._id);
     return successResp(resp, statusCodes.successCode, {
       data: deletedUser,
+      message: successMsg.success,
+    });
+  } catch (err) {
+    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+  }
+};
+
+// get all users --Admin
+export const allUsers = async (req: Request, resp: Response) => {
+  try {
+    const users = await getUsers();
+    return successResp(resp, statusCodes.successCode, {
+      data: users,
+      message: successMsg.success,
+    });
+  } catch (err) {
+    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+  }
+};
+
+// get all users --Admin
+export const deleteUsers = async (req: Request, resp: Response) => {
+  try {
+    const users = await deleteUserAdmin(req.params.id);
+    return successResp(resp, statusCodes.successCode, {
+      data: users,
       message: successMsg.success,
     });
   } catch (err) {

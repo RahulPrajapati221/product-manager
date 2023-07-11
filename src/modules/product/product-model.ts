@@ -23,13 +23,13 @@ const productSchema = new Schema<IProduct>(
       type: Number,
       default: 0,
     },
-    quantity:{
-      type:Number,
-      default:0,
+    quantity: {
+      type: Number,
+      default: 0,
     },
-    available:{
-      type:Boolean,
-      default:false,
+    available: {
+      type: Boolean,
+      default: true,
     },
     createdAt: {
       type: Date,

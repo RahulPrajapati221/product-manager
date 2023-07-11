@@ -6,8 +6,8 @@ export const generateToken = async (user: any): Promise<string> => {
     process.env.JWT_SECRET as string
   );
 
-  user.tokens = user.tokens.concat({ token });
-  await user.updateOne(user);
+  // user.tokens = user.tokens.concat({ token });
+  // await user.updateOne(user);
 
   return token;
 };
