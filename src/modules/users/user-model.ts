@@ -37,35 +37,27 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: Role,
+      default: Role.USER,
+      uppercase: true,
       required: true,
     },
     createdAt: {
       type: Date,
       default: Date.now(),
     },
-    tokens: [
-      {
-        token: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    // tokens: [
+    //   {
+    //     token: {
+    //       type: String,
+    //       required: true,
+    //     },
+    //   },
+    // ],
   },
   {
     timestamps: true,
   }
 );
-
-// userSchema.methods.toJSON = function () {
-//   const user = this;
-//   const userObject = user.toObject();
-
-//   delete userObject.password;
-//   delete userObject.tokens;
-
-//   return userObject;
-// };
 
 const User = model<IUser>("User", userSchema);
 

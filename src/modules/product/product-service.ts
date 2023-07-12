@@ -17,8 +17,7 @@ export const allProduct = async () => {
 };
 
 export const findProduct = async (productId: any): Promise<IProduct | null> => {
-  const { _id, sellerId } = productId;
-  const updatedUser = await Product.findOne({ _id, sellerId });
+  const updatedUser = await Product.findOne(productId);
   return updatedUser;
 };
 
@@ -40,7 +39,13 @@ export const updateProductById = async (
 export const deleteProductById = async (
   productId: any
 ): Promise<IProduct | null> => {
-  const { _id, sellerId } = productId;
-  const updatedUser = await Product.findByIdAndDelete({ _id, sellerId });
-  return updatedUser;
+  const deletedProduct = await Product.findByIdAndDelete(productId);
+  return deletedProduct;
+};
+
+// --------------super-admin---------------
+
+export const sellerProducts = async (sellerId: string) => {
+  const user = await Product.find({ sellerId });
+  return user;
 };

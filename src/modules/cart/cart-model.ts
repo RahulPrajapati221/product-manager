@@ -2,33 +2,28 @@ import { Schema, model } from "mongoose";
 
 const cartSchema = new Schema(
   {
-    item: {
-      product: {
-        _id: {
-          type: Schema.Types.ObjectId,
-          required: true,
-        },
-        name: {
-          type: String,
-        },
-        price: {
-          type: String,
-        },
-        description: {
-          type: String,
-        },
-        sellerId: {
-          type: Schema.Types.ObjectId,
-          required: true,
-        },
-        Quantity: {
-          type: Number,
-          required: true,
-          default: 1,
-        },
+    product: {
+      _id: {
+        type: Schema.Types.ObjectId,
+        required: true,
       },
-      totalPrice: {
+      name: {
+        type: String,
+      },
+      price: {
+        type: String,
+      },
+      description: {
+        type: String,
+      },
+      sellerId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+      },
+      Quantity: {
         type: Number,
+        required: true,
+        default: 1,
       },
     },
     userId: {
@@ -49,3 +44,9 @@ const cartSchema = new Schema(
 const Cart = model("Cart", cartSchema);
 
 export default Cart;
+
+//  product: {
+//     // type: Schema.Types.Mixed,
+//     // required: true,
+//     // ref: "Cart",
+//   },

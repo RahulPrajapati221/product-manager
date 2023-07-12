@@ -2,6 +2,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../modules/users/user-model";
 import { errorMsg, constants } from "../constant";
 import { Request, Response, NextFunction } from "express";
+import { Role } from "../modules/users/user-type";
 
 export const auth = async (
   req: Request,
@@ -25,20 +26,26 @@ export const auth = async (
       }
       req.body.token = token;
       req.body.user = user;
-      next();
+      return next();
     } else if (req.header("Authorization")?.startsWith("Basic") == true) {
       const basicAuth = req.header("Authorization")?.replace("Basic ", "")!;
       const data = Buffer.from(basicAuth, "base64")
         .toString("ascii")
         .split(":");
+
       const userName = process.env.USERNAME;
       const passWord = process.env.PASSWORD;
-      if (userName === data[0] && passWord === data[1]) {
-        return next();
-      } else {
+      if (userName !== data[0] && passWord !== data[1]) {
         throw new Error("this resource not accessible");
       }
+      const user = {
+        role: Role.SUPERADMIN,
+      };
+      req.body.user = user;
+
+      return next();
     }
+    next(errorMsg.unauthorized);
   } catch (e) {
     resp.status(401).send({ error: errorMsg.unauthorized });
   }
@@ -54,11 +61,15 @@ export const SuperAdmin = async (
     const data = Buffer.from(basicAuth, "base64").toString("ascii").split(":");
     const userName = process.env.USERNAME;
     const passWord = process.env.PASSWORD;
-    if (userName === data[0] && passWord === data[1]) {
-      return next();
-    } else {
+
+    if (userName !== data[0] && passWord !== data[1]) {
       throw new Error("this resource not accessible");
     }
+    const user = {
+      role: Role.SUPERADMIN,
+    };
+    req.body.user = user;
+    next();
   } catch (e) {
     resp.status(401).send({ error: errorMsg.unauthorized });
   }

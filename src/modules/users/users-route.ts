@@ -7,6 +7,8 @@ import {
   updateUser,
   deleteUser,
   allUsers,
+  getAllUsersById,
+  deleteUserByAdmin,
 } from "./user-controller";
 import { deleteUserAdmin } from "./user-service";
 const router = express.Router();
@@ -36,7 +38,7 @@ router.route("/allUser").get(SuperAdmin, allUsers);
 //delete Users--super-admin
 router
   .route("/admin/:id")
-  .get(SuperAdmin, allUsers)
-  .delete(SuperAdmin, deleteUserAdmin);
+  .get(SuperAdmin, getAllUsersById)
+  .delete(SuperAdmin, deleteUserByAdmin);
 
 export default router;

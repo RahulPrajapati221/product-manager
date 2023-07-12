@@ -5,6 +5,7 @@ import {
   deleteUserById,
   getUsers,
   deleteUserAdmin,
+  getUsersById,
 } from "./user-service";
 import { validUpdate } from "../../utils/validUpdateField";
 import { Request, Response } from "express";
@@ -15,12 +16,12 @@ import { encryptPass } from "../../utils/preOperation";
 //Register user
 export const registerUser = async (req: Request, resp: Response) => {
   try {
-    const userPreData: any = await encryptPass(req.body);
-    const user = await createUser(userPreData);
-    return successResp(resp, statusCodes.createdCode, {
-      data: user,
-      message: successMsg.created,
-    });
+  const userPreData = await encryptPass(req.body);
+  const user = await createUser(userPreData);
+  return successResp(resp, statusCodes.createdCode, {
+    data: user,
+    message: successMsg.created,
+  });
   } catch (err) {
     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
   }
@@ -124,6 +125,8 @@ export const deleteUser = async (req: Request, resp: Response) => {
   }
 };
 
+//-------------super-admin-----------------
+
 // get all users --Admin
 export const allUsers = async (req: Request, resp: Response) => {
   try {
@@ -137,12 +140,32 @@ export const allUsers = async (req: Request, resp: Response) => {
   }
 };
 
-// get all users --Admin
-export const deleteUsers = async (req: Request, resp: Response) => {
+// get users by Id --Admin
+export const getAllUsersById = async (req: Request, resp: Response) => {
   try {
-    const users = await deleteUserAdmin(req.params.id);
+    const user = await getUsersById(req.params.id);
     return successResp(resp, statusCodes.successCode, {
-      data: users,
+      data: user,
+      message: successMsg.success,
+    });
+  } catch (err) {
+    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+  }
+};
+
+// delete users --Admin
+export const deleteUserByAdmin = async (req: Request, resp: Response) => {
+  try {
+    const deletedUser = await deleteUserAdmin(req.params.id);
+    if (!deletedUser) {
+      return errorResp(
+        resp,
+        statusCodes.notFoundCode,
+        errorMsg.notFound(constants.user)
+      );
+    }
+    return successResp(resp, statusCodes.successCode, {
+      data: deletedUser,
       message: successMsg.success,
     });
   } catch (err) {
