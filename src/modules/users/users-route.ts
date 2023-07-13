@@ -33,7 +33,7 @@ router
   .delete(auth, deleteUser);
 
 //All Users--super-admin
-router.route("/allUser").get(SuperAdmin, allUsers);
+router.route("/admin/allUser").get(SuperAdmin, allUsers);
 
 //delete Users--super-admin
 router

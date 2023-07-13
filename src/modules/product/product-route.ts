@@ -17,6 +17,7 @@ router.post("/new", auth, createProduct);
 //Get all Products
 router.route("/").get(getAllProduct);
 
+//Get Seller Product
 router.route("/seller").get(auth, getSellerProduct);
 
 router
@@ -25,6 +26,7 @@ router
   .patch(auth, updateProduct)
   .delete(auth, deleteProduct);
 
+//SuperAdmin--get Seller Products by sellerId
 router.route("/admin/seller/:id").get(SuperAdmin, productBySellerId);
 
 export default router;

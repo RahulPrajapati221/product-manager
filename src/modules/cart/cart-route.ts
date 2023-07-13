@@ -4,7 +4,7 @@ import {
   cartItemById,
   deleteCartItem,
   insertCart,
-  //   updateCartItem,
+  updateCartItem,
   userCartItem,
 } from "./cart-controller";
 const router = express.Router();
@@ -18,7 +18,7 @@ router.route("/").get(auth, userCartItem);
 router
   .route("/:id")
   .get(auth, cartItemById)
-  .patch(auth)
+  .patch(auth, updateCartItem)
   .delete(auth, deleteCartItem);
 
 export default router;

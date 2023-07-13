@@ -1,17 +1,19 @@
 import { Schema, model } from "mongoose";
+import { ICart } from "./cart-type";
 
-const cartSchema = new Schema(
+const cartSchema = new Schema<ICart>(
   {
     product: {
       _id: {
         type: Schema.Types.ObjectId,
         required: true,
+        ref: "Product",
       },
       name: {
         type: String,
       },
       price: {
-        type: String,
+        type: Number,
       },
       description: {
         type: String,
@@ -41,12 +43,6 @@ const cartSchema = new Schema(
   }
 );
 
-const Cart = model("Cart", cartSchema);
+const Cart = model<ICart>("Cart", cartSchema);
 
 export default Cart;
-
-//  product: {
-//     // type: Schema.Types.Mixed,
-//     // required: true,
-//     // ref: "Cart",
-//   },

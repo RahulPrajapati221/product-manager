@@ -36,7 +36,7 @@ export const auth = async (
       const userName = process.env.USERNAME;
       const passWord = process.env.PASSWORD;
       if (userName !== data[0] && passWord !== data[1]) {
-        throw new Error("this resource not accessible");
+        throw new Error(errorMsg.unauthorized);
       }
       const user = {
         role: Role.SUPERADMIN,
@@ -63,7 +63,7 @@ export const SuperAdmin = async (
     const passWord = process.env.PASSWORD;
 
     if (userName !== data[0] && passWord !== data[1]) {
-      throw new Error("this resource not accessible");
+      throw new Error(errorMsg.unauthorized);
     }
     const user = {
       role: Role.SUPERADMIN,

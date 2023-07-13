@@ -71,6 +71,9 @@ export const getProductById = async (req: Request, resp: Response) => {
   try {
     const role = req.body.user.role;
     if (role === Role.ADMIN) {
+      return errorResp(resp, statusCodes.forbidden, errorMsg.authRole(role));
+    }
+    if (role === Role.ADMIN) {
       const productId = {
         _id: req.params.id,
         sellerId: req.body.user._id,

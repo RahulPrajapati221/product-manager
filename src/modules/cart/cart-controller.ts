@@ -1,15 +1,18 @@
 import { Request, Response } from "express";
-import Cart from "./cart-model";
 import { errorResp, successResp } from "../../utils/response";
 import { constants, errorMsg, statusCodes, successMsg } from "../../constant";
 import {
   deleteCartItemById,
   getCartItem,
+  getCartItemById,
   insertCartItem,
+  updateCartItemById,
 } from "./cart-service";
 import { Role } from "../users/user-type";
 import { findProduct } from "../product/product-service";
+import { validUpdate } from "../../utils/validUpdateField";
 
+//Insert Products In Cart
 export const insertCart = async (req: Request, resp: Response) => {
   const { _id, role } = req.body.user;
   try {
@@ -34,37 +37,40 @@ export const insertCart = async (req: Request, resp: Response) => {
   }
 };
 
+//get User Cart Items
 export const userCartItem = async (req: Request, resp: Response) => {
   const { _id, role } = req.body.user;
   try {
-    if (role === Role.ADMIN) {
-      return errorResp(resp, statusCodes.forbidden, errorMsg.authRole(role));
+    if (role === Role.USER) {
+      const products = await getCartItem(_id);
+      if (!products) {
+        return errorResp(
+          resp,
+          statusCodes.notFoundCode,
+          errorMsg.notFound(constants.product)
+        );
+      }
+      return successResp(resp, statusCodes.successCode, {
+        data: products,
+        message: successMsg.success,
+      });
     }
-    const products = await getCartItem(_id);
-    if (!products) {
-      return errorResp(
-        resp,
-        statusCodes.notFoundCode,
-        errorMsg.notFound(constants.product)
-      );
-    }
-    return successResp(resp, statusCodes.successCode, {
-      data: products,
-      message: successMsg.success,
-    });
+    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
   } catch {
     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
   }
 };
 
+//Get Cart Item By Product Id
 export const cartItemById = async (req: Request, resp: Response) => {
   const { _id, role } = req.body.user;
   try {
     if (role === Role.USER) {
-      const product = await Cart.findOne({
+      const productId = {
         userId: _id,
         "product._id": req.params.id,
-      });
+      };
+      const product = await getCartItemById(productId);
       if (!product) {
         return errorResp(
           resp,
@@ -77,52 +83,44 @@ export const cartItemById = async (req: Request, resp: Response) => {
         message: successMsg.success,
       });
     }
-    return errorResp(resp, statusCodes.forbidden, errorMsg.authRole(role));
+    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
   } catch {
     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
   }
 };
 
-// export const updateCartItem = async (req: Request, resp: Response) => {
-//   // try {
-//     const { role, _id } = req.body.user;
-//     if (role === Role.USER) {
-//       const updates = req.body.update;
-//       const allowedUpdates = ["Quantity"];
-//       const invalidField = validUpdate(updates, allowedUpdates);
-//       const verifyId = {
-//         userId: _id,
-//         "product._id": req.params.id,
-//       };
-//       // const product = await Cart.findOne(verifyId);
-//       // if (!product) {
-//       //   return errorResp(
-//       //     resp,
-//       //     statusCodes.notFoundCode,
-//       //     errorMsg.notFound(constants.product)
-//       //   );
-//       // }
-//       const Product = await Cart.findByIdAndUpdate(verifyId, updates, {
-//         new: true,
-//       });
-//       if (!Product) {
-//         return errorResp(
-//           resp,
-//           statusCodes.notFoundCode,
-//           errorMsg.notFound(constants.product)
-//         );
-//       }
-//       return successResp(resp, statusCodes.createdCode, {
-//         data: { alert: errorMsg.invalidUpdate(invalidField), Product },
-//         message: successMsg.created,
-//       });
-//     }
-//     return errorResp(resp, statusCodes.forbidden, errorMsg.badRequest);
-//   // } catch (err) {
-//   //   return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
-//   // }
-// };
+//Update Cart Item By Product Id
+export const updateCartItem = async (req: Request, resp: Response) => {
+  try {
+    const { role, _id } = req.body.user;
+    if (role === Role.USER) {
+      const updates = req.body.update;
+      const allowedUpdates = ["Quantity"];
+      const invalidField = validUpdate(updates, allowedUpdates);
+      const verifyId = {
+        userId: _id,
+        "product._id": req.params.id,
+      };
+      const Product = await updateCartItemById(verifyId, updates);
+      if (!Product) {
+        return errorResp(
+          resp,
+          statusCodes.notFoundCode,
+          errorMsg.notFound(constants.product)
+        );
+      }
+      return successResp(resp, statusCodes.createdCode, {
+        data: { alert: errorMsg.invalidUpdate(invalidField), Product },
+        message: successMsg.created,
+      });
+    }
+    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
+  } catch (err) {
+    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+  }
+};
 
+//Delete Cart Item By Product Id
 export const deleteCartItem = async (req: Request, resp: Response) => {
   const { _id, role } = req.body.user;
   try {
@@ -132,10 +130,6 @@ export const deleteCartItem = async (req: Request, resp: Response) => {
         "product._id": req.params.id,
       };
       const deletedProduct = await deleteCartItemById(productId);
-      // const deletedProduct = await Cart.findOneAndDelete({
-      //   userId: _id,
-      //   "product._id": req.params.id,
-      // });
       if (!deletedProduct) {
         return errorResp(
           resp,
@@ -148,7 +142,7 @@ export const deleteCartItem = async (req: Request, resp: Response) => {
         message: successMsg.success,
       });
     }
-    return errorResp(resp, statusCodes.forbidden, errorMsg.badRequest);
+    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
   } catch {
     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
   }
