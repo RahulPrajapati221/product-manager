@@ -1,87 +1,180 @@
 import { Request, Response } from "express";
-import { successMsg, errorMsg, statusCodes, constants } from "../../constant";
+import { successMsg, errorMsg, statusCode, constants } from "../../constant";
 import { successResp, errorResp } from "../../utils/response";
 import {
   allProduct,
   deleteProductById,
-  getSingleProduct,
+  findProduct,
   newProduct,
+  findSellerProduct,
   updateProductById,
 } from "./product-service";
-import { IProduct } from "./product-type";
+import { validUpdate } from "../../utils/validUpdateField";
+import { Role } from "../users/enum";
 
 //Create Product
 export const createProduct = async (req: Request, resp: Response) => {
   try {
-    const reqBody: IProduct = req.body;
-    const product = await newProduct(reqBody);
-    return successResp(resp, statusCodes.createdCode, {
-      data: product,
-      message: successMsg.created,
-    });
+    const { role, _id } = req.body.user;
+    if (role === Role.ADMIN) {
+      const reqBody = {
+        ...req.body,
+        sellerId: _id,
+      };
+
+      const product = await newProduct(reqBody);
+      return successResp(resp, statusCode.created, {
+        data: product,
+        message: successMsg.created,
+      });
+    }
+    return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
-//Get All Products----SuperAdmin
+//Get All Products
 export const getAllProduct = async (req: Request, resp: Response) => {
   try {
     const products = await allProduct();
-    return successResp(resp, statusCodes.successCode, {
+    return successResp(resp, statusCode.success, {
       data: products,
       message: successMsg.success,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
+  }
+};
+
+//Get sellers Products
+export const getSellerProduct = async (req: Request, resp: Response) => {
+  try {
+    const role = req.body.user.role;
+    if (role === Role.USER) {
+      return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
+    }
+    let sellerId;
+    if (role === Role.ADMIN) {
+      sellerId = req.body.user._id;
+    }
+    if (role === Role.SUPERADMIN) {
+      sellerId = req.params.id;
+    }
+    const sellerProduct = await findSellerProduct(sellerId);
+    return successResp(resp, statusCode.success, {
+      data: sellerProduct,
+      message: successMsg.success,
+    });
+  } catch (err) {
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
 // get Product by ID
 export const getProductById = async (req: Request, resp: Response) => {
   try {
-    const productId = req.params.id;
-    const Product = await getSingleProduct(productId);
-    return successResp(resp, statusCodes.successCode, {
+    const role = req.body.user.role;
+    if (role === Role.USER) {
+      return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
+    }
+
+    let productId;
+    if (role === Role.ADMIN) {
+      productId = {
+        _id: req.params.id,
+        sellerId: req.body.user._id,
+      };
+    }
+    if (role === Role.SUPERADMIN) {
+      productId = {
+        _id: req.params.id,
+      };
+    }
+    const Product = await findProduct(productId!);
+    return successResp(resp, statusCode.success, {
       data: { Product },
       message: successMsg.created,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
 // update Product
 export const updateProduct = async (req: Request, resp: Response) => {
   try {
-    const productId = req.params.id;
+    const { role, id } = req.body.user;
+    if (role === Role.USER) {
+      return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
+    }
     const updates = req.body.update;
+    const allowedUpdates = ["name", "description", "price"];
+    const invalidField = validUpdate(updates, allowedUpdates);
+
+    let productId;
+    if (role === Role.ADMIN) {
+      productId = {
+        _id: req.params.id,
+        sellerId: id,
+      };
+    }
+    if (role === Role.SUPERADMIN) {
+      productId = {
+        _id: req.params.id,
+      };
+    }
+    const product = await findProduct(productId!);
+    if (!product) {
+      return errorResp(
+        resp,
+        statusCode.notFound,
+        errorMsg.notFound(constants.product)
+      );
+    }
     const Product = await updateProductById(productId, updates);
-    return successResp(resp, statusCodes.createdCode, {
-      data: { Product },
+    return successResp(resp, statusCode.created, {
+      data: { alert: errorMsg.invalidUpdate(invalidField), Product },
       message: successMsg.created,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
 // delete Product
 export const deleteProduct = async (req: Request, resp: Response) => {
+  const { role, id } = req.body.user;
   try {
-    const deletedProduct = await deleteProductById(req.params.id);
+    if (role === Role.USER) {
+      return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
+    }
+
+    let productId;
+    if (role === Role.ADMIN) {
+      productId = {
+        _id: req.params.id,
+        sellerId: id,
+      };
+    }
+    if (role === Role.SUPERADMIN) {
+      productId = {
+        _id: req.params.id,
+      };
+    }
+    const deletedProduct = await deleteProductById(productId!);
     if (!deletedProduct) {
       return errorResp(
         resp,
-        statusCodes.notFoundCode,
+        statusCode.notFound,
         errorMsg.notFound(constants.product)
       );
     }
-    return successResp(resp, statusCodes.successCode, {
+    return successResp(resp, statusCode.success, {
       data: deletedProduct,
       message: successMsg.success,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };

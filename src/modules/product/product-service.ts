@@ -6,25 +6,35 @@ export const newProduct = async (reqBody: IProduct) => {
   return { product };
 };
 
-export const allProduct = async () => {
-  const product = await Product.find();
+export const findSellerProduct = async (sellerId: object) => {
+  const product = await Product.find({ sellerId });
   return { product };
 };
 
-export const getSingleProduct = async (
-  ProductId: string
+export const allProduct = async () => {
+  const product = await Product.find().select([
+    "name",
+    "description",
+    "price",
+    "ratings",
+  ]);
+  return { product };
+};
+
+export const findProduct = async (
+  productId: object
 ): Promise<IProduct | null> => {
-  const updatedUser = await Product.findOne({ _id: ProductId });
-  console.log("🚀 ~ file: product-service.ts:18 ~ updatedUser:", updatedUser);
+  const updatedUser = await Product.findOne(productId);
   return updatedUser;
 };
 
 export const updateProductById = async (
-  ProductId: string,
+  productId: any,
   reqBody: IProduct
 ): Promise<IProduct | null> => {
+  const { _id, sellerId } = productId;
   const updatedUser = await Product.findByIdAndUpdate(
-    { _id: ProductId },
+    { _id, sellerId },
     reqBody,
     {
       new: true,
@@ -34,9 +44,13 @@ export const updateProductById = async (
 };
 
 export const deleteProductById = async (
-  ProductId: string
+  productId: object
 ): Promise<IProduct | null> => {
-  const updatedUser = await Product.findByIdAndDelete({ _id: ProductId });
-  console.log("🚀 ~ file: product-service.ts:40 ~ updatedUser:", updatedUser);
-  return updatedUser;
+  const deletedProduct = await Product.findByIdAndDelete(productId);
+  return deletedProduct;
+};
+
+// When seller deleted then delete Seller's Products
+export const deleteSellerProduct = async (sellerId: string) => {
+  const items = await Product.deleteMany({ sellerId });
 };

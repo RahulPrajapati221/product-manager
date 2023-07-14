@@ -4,10 +4,9 @@ import { findByCredentials } from "../../utils/findByCredential";
 import { IUser } from "./user-type";
 import { VerifyUserType } from "./user-type";
 
-export const createUser = async (reqBody: IUser): Promise<VerifyUserType> => {
+export const createUser = async (reqBody: IUser) => {
   const user = await User.create(reqBody);
-  const token = await generateToken(user);
-  return { user, token };
+  return { user };
 };
 
 export const updateUserById = async (
@@ -29,9 +28,19 @@ export const findUser = async (
   return { user, token };
 };
 
-export const deleteUserById = async (user_id: string) => {
+export const deleteUserById = async (userId: string): Promise<IUser | null> => {
   const deletedUser = await User.findOneAndDelete({
-    _id: user_id,
+    _id: userId,
   });
   return deletedUser;
+};
+
+export const getUsers = async () => {
+  const user = await User.find();
+  return user;
+};
+
+export const getUsersById = async (userId: string): Promise<IUser | null> => {
+  const user = await User.findOne({ _id: userId });
+  return user;
 };

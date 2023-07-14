@@ -22,6 +22,15 @@ const productSchema = new Schema<IProduct>(
     ratings: {
       type: Number,
       default: 0,
+      max: 5,
+    },
+    quantity: {
+      type: Number,
+      default: 0,
+    },
+    available: {
+      type: Boolean,
+      default: true,
     },
     createdAt: {
       type: Date,

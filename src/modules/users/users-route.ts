@@ -1,18 +1,21 @@
 import express from "express";
-import { auth } from "../../middleware/auth";
+import { SuperAdmin, auth } from "../../middleware/auth";
 import {
   registerUser,
   loginUser,
   userProfile,
-  logOutUser,
-  logOutAll,
   updateUser,
   deleteUser,
+  allUsers,
+  getUserById,
 } from "./user-controller";
 const router = express.Router();
 
 //Register user
 router.post("/register", registerUser);
+
+// login user
+router.post("/login", loginUser);
 
 //User profile
 router
@@ -21,13 +24,13 @@ router
   .patch(auth, updateUser)
   .delete(auth, deleteUser);
 
-// login user
-router.post("/login", loginUser);
+//All Users--super-admin
+router.route("/admin/allUser").get(SuperAdmin, allUsers);
 
-// logout user
-router.post("/logout", auth, logOutUser);
-
-// logout user from all sessions
-router.post("/logoutAll", auth, logOutAll);
+//delete Users--super-admin
+router
+  .route("/admin/:id")
+  .get(SuperAdmin, getUserById)
+  .delete(SuperAdmin, deleteUser);
 
 export default router;

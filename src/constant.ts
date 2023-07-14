@@ -5,13 +5,14 @@ export const successMsg = {
   created: "Created successfully",
 };
 
-export const statusCodes = {
-  successCode: 200,
-  createdCode: 201,
-  badRequestCode: 400,
-  unauthorizedCode: 401,
-  notFoundCode: 404,
-  serverErrorCode: 500,
+export const statusCode = {
+  success: 200,
+  created: 201,
+  badRequest: 400,
+  unauthorized: 401,
+  notFound: 404,
+  serverError: 500,
+  forbidden: 403,
 };
 
 export const errorMsg = {
@@ -26,7 +27,8 @@ export const errorMsg = {
   invalidUpdate: (value: string[]) =>
     !`${value}`
       ? `All fields are correct`
-      : `( ' ${value} ' ) are invalid fields`,
+      : `( ' ${value} ' ) are invalid field or Update not allowed`,
+  forbidden: "You don't have permission to access this resource",
 };
 
 export const constants = {
