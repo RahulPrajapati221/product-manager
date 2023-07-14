@@ -10,7 +10,7 @@ export const createUser = async (reqBody: IUser) => {
 };
 
 export const updateUserById = async (
-  user: any,
+  user: IUser,
   reqBody: IUser
 ): Promise<IUser | null> => {
   const updatedUser = await User.findByIdAndUpdate(user, reqBody, {
@@ -28,9 +28,9 @@ export const findUser = async (
   return { user, token };
 };
 
-export const deleteUserById = async (user_id: string) => {
+export const deleteUserById = async (userId: string): Promise<IUser | null> => {
   const deletedUser = await User.findOneAndDelete({
-    _id: user_id,
+    _id: userId,
   });
   return deletedUser;
 };
@@ -40,12 +40,7 @@ export const getUsers = async () => {
   return user;
 };
 
-export const getUsersById = async (userId: string) => {
+export const getUsersById = async (userId: string): Promise<IUser | null> => {
   const user = await User.findOne({ _id: userId });
   return user;
-};
-
-export const deleteUserAdmin = async (userId: string) => {
-  const deletedUser = await User.findOneAndDelete({ _id: userId });
-  return deletedUser;
 };

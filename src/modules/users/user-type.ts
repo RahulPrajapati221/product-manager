@@ -1,12 +1,12 @@
 import { Document } from "mongoose";
+import { Role } from "./enum";
 
 export interface IUser {
   name: string;
   email: string;
   password: string;
-  role: string;
-  createdAt: Date;
-  // tokens?: { token: string }[];
+  role: Role;
+  token:string
 }
 
 export interface IUserModel extends IUser, Document {}
@@ -16,8 +16,3 @@ export interface VerifyUserType {
   token: string;
 }
 
-export enum Role {
-  ADMIN = "ADMIN",
-  USER = "USER",
-  SUPERADMIN = "SUPERADMIN",
-}

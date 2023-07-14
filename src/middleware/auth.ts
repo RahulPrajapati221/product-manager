@@ -1,8 +1,8 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import User from "../modules/users/user-model";
 import { errorMsg, constants } from "../constant";
 import { Request, Response, NextFunction } from "express";
-import { Role } from "../modules/users/user-type";
+import { Role } from "../modules/users/enum";
+import { getUsersById } from "../modules/users/user-service";
 
 export const auth = async (
   req: Request,
@@ -10,7 +10,7 @@ export const auth = async (
   next: NextFunction
 ) => {
   try {
-    if (req.header("Authorization")?.startsWith("Bearer") == true) {
+    if (req.header("Authorization")?.includes("Bearer")) {
       const token: string = req
         .header("Authorization")
         ?.replace("Bearer ", "")!;
@@ -18,32 +18,15 @@ export const auth = async (
         token,
         process.env.JWT_SECRET as string
       ) as JwtPayload;
-      const user = await User.findOne({
-        _id: decoded._id,
-      });
+      const user = await getUsersById(decoded._id);
       if (!user) {
         throw new Error(errorMsg.notFound(constants.user));
       }
       req.body.token = token;
       req.body.user = user;
       return next();
-    } else if (req.header("Authorization")?.startsWith("Basic") == true) {
-      const basicAuth = req.header("Authorization")?.replace("Basic ", "")!;
-      const data = Buffer.from(basicAuth, "base64")
-        .toString("ascii")
-        .split(":");
-
-      const userName = process.env.USERNAME;
-      const passWord = process.env.PASSWORD;
-      if (userName !== data[0] && passWord !== data[1]) {
-        throw new Error(errorMsg.unauthorized);
-      }
-      const user = {
-        role: Role.SUPERADMIN,
-      };
-      req.body.user = user;
-
-      return next();
+    } else if (req.header("Authorization")?.includes("Basic")) {
+      return SuperAdmin(req, resp, next);
     }
     next(errorMsg.unauthorized);
   } catch (e) {
@@ -58,11 +41,13 @@ export const SuperAdmin = async (
 ) => {
   try {
     const basicAuth = req.header("Authorization")?.replace("Basic ", "")!;
-    const data = Buffer.from(basicAuth, "base64").toString("ascii").split(":");
+    const [name, pass] = Buffer.from(basicAuth, "base64")
+      .toString("ascii")
+      .split(":");
     const userName = process.env.USERNAME;
     const passWord = process.env.PASSWORD;
 
-    if (userName !== data[0] && passWord !== data[1]) {
+    if (userName !== name && passWord !== pass) {
       throw new Error(errorMsg.unauthorized);
     }
     const user = {

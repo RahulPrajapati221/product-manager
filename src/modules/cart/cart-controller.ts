@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { errorResp, successResp } from "../../utils/response";
-import { constants, errorMsg, statusCodes, successMsg } from "../../constant";
+import { constants, errorMsg, statusCode, successMsg } from "../../constant";
 import {
   deleteCartItemById,
   getCartItem,
@@ -8,9 +8,9 @@ import {
   insertCartItem,
   updateCartItemById,
 } from "./cart-service";
-import { Role } from "../users/user-type";
 import { findProduct } from "../product/product-service";
 import { validUpdate } from "../../utils/validUpdateField";
+import { Role } from "../users/enum";
 
 //Insert Products In Cart
 export const insertCart = async (req: Request, resp: Response) => {
@@ -21,19 +21,19 @@ export const insertCart = async (req: Request, resp: Response) => {
       if (!product) {
         return errorResp(
           resp,
-          statusCodes.notFoundCode,
+          statusCode.notFound,
           errorMsg.notFound(constants.product)
         );
       }
-      const cart = await insertCartItem(_id, product);
-      return successResp(resp, statusCodes.successCode, {
+      const cart = await insertCartItem(_id, req.params.id);
+      return successResp(resp, statusCode.success, {
         data: cart,
         message: successMsg.success,
       });
     }
-    return errorResp(resp, statusCodes.forbidden, errorMsg.badRequest);
+    return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
   } catch {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
@@ -46,18 +46,18 @@ export const userCartItem = async (req: Request, resp: Response) => {
       if (!products) {
         return errorResp(
           resp,
-          statusCodes.notFoundCode,
+          statusCode.notFound,
           errorMsg.notFound(constants.product)
         );
       }
-      return successResp(resp, statusCodes.successCode, {
+      return successResp(resp, statusCode.success, {
         data: products,
         message: successMsg.success,
       });
     }
-    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
+    return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
   } catch {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
@@ -68,24 +68,24 @@ export const cartItemById = async (req: Request, resp: Response) => {
     if (role === Role.USER) {
       const productId = {
         userId: _id,
-        "product._id": req.params.id,
+        product: req.params.id,
       };
       const product = await getCartItemById(productId);
       if (!product) {
         return errorResp(
           resp,
-          statusCodes.notFoundCode,
+          statusCode.notFound,
           errorMsg.notFound(constants.product)
         );
       }
-      return successResp(resp, statusCodes.successCode, {
+      return successResp(resp, statusCode.success, {
         data: product,
         message: successMsg.success,
       });
     }
-    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
+    return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
   } catch {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
@@ -99,24 +99,24 @@ export const updateCartItem = async (req: Request, resp: Response) => {
       const invalidField = validUpdate(updates, allowedUpdates);
       const verifyId = {
         userId: _id,
-        "product._id": req.params.id,
+        product: req.params.id,
       };
       const Product = await updateCartItemById(verifyId, updates);
       if (!Product) {
         return errorResp(
           resp,
-          statusCodes.notFoundCode,
+          statusCode.notFound,
           errorMsg.notFound(constants.product)
         );
       }
-      return successResp(resp, statusCodes.createdCode, {
+      return successResp(resp, statusCode.created, {
         data: { alert: errorMsg.invalidUpdate(invalidField), Product },
         message: successMsg.created,
       });
     }
-    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
+    return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
@@ -127,23 +127,23 @@ export const deleteCartItem = async (req: Request, resp: Response) => {
     if (role === Role.USER) {
       const productId = {
         userId: _id,
-        "product._id": req.params.id,
+        product: req.params.id,
       };
       const deletedProduct = await deleteCartItemById(productId);
       if (!deletedProduct) {
         return errorResp(
           resp,
-          statusCodes.notFoundCode,
+          statusCode.notFound,
           errorMsg.notFound(constants.product)
         );
       }
-      return successResp(resp, statusCodes.successCode, {
+      return successResp(resp, statusCode.success, {
         data: deletedProduct,
         message: successMsg.success,
       });
     }
-    return errorResp(resp, statusCodes.forbidden, errorMsg.unauthorized);
+    return errorResp(resp, statusCode.forbidden, errorMsg.forbidden);
   } catch {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };

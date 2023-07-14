@@ -7,7 +7,6 @@ import {
   getProductById,
   deleteProduct,
   getSellerProduct,
-  productBySellerId,
 } from "./product-controller";
 const router = express.Router();
 
@@ -27,6 +26,6 @@ router
   .delete(auth, deleteProduct);
 
 //SuperAdmin--get Seller Products by sellerId
-router.route("/admin/seller/:id").get(SuperAdmin, productBySellerId);
+router.route("/admin/seller/:id").get(SuperAdmin, getSellerProduct);
 
 export default router;

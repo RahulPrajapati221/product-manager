@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import validator from "validator";
 import { errorMsg } from "../../constant";
 import { IUser } from "./user-type";
-import { Role } from "./user-type";
+import { Role } from "./enum";
 
 const userSchema = new Schema<IUser>(
   {
@@ -35,24 +35,11 @@ const userSchema = new Schema<IUser>(
       },
     },
     role: {
-      type: String,
-      enum: Role,
+      type: Number,
       default: Role.USER,
-      uppercase: true,
       required: true,
+      max: 2,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now(),
-    },
-    // tokens: [
-    //   {
-    //     token: {
-    //       type: String,
-    //       required: true,
-    //     },
-    //   },
-    // ],
   },
   {
     timestamps: true,

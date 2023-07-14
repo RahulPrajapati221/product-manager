@@ -7,10 +7,8 @@ import {
   updateUser,
   deleteUser,
   allUsers,
-  getAllUsersById,
-  deleteUserByAdmin,
+  getUserById,
 } from "./user-controller";
-import { deleteUserAdmin } from "./user-service";
 const router = express.Router();
 
 //Register user
@@ -18,12 +16,6 @@ router.post("/register", registerUser);
 
 // login user
 router.post("/login", loginUser);
-
-// // logout user
-// router.post("/logout", auth, logOutUser);
-
-// // logout user from all sessions
-// router.post("/logoutAll", auth, logOutAll);
 
 //User profile
 router
@@ -38,7 +30,7 @@ router.route("/admin/allUser").get(SuperAdmin, allUsers);
 //delete Users--super-admin
 router
   .route("/admin/:id")
-  .get(SuperAdmin, getAllUsersById)
-  .delete(SuperAdmin, deleteUserByAdmin);
+  .get(SuperAdmin, getUserById)
+  .delete(SuperAdmin, deleteUser);
 
 export default router;

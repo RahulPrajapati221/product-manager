@@ -1,38 +1,50 @@
-import { IProduct } from "../product/product-type";
 import Cart from "./cart-model";
-import { VerifyIdType } from "./cart-type";
+import { ICart } from "./cart-type";
 
-export const insertCartItem = async (userId: string, product: IProduct) => {
+export const insertCartItem = async (
+  userId: string,
+  productId: string
+): Promise<ICart> => {
   const cart = await Cart.create({
-    product,
+    product: productId,
     userId,
   });
   return cart;
 };
 
 export const getCartItem = async (userId: string) => {
-  const items = await Cart.find({ userId });
+  const items = await Cart.find({ userId }).populate("product", [
+    "name",
+    "description",
+    "price",
+    "ratings",
+  ]);
   return items;
 };
 
-export const getCartItemById = async (productId: VerifyIdType) => {
-  const items = await Cart.findOne(productId);
+export const getCartItemById = async (productId: object) => {
+  const items = await Cart.findOne(productId).populate("product", [
+    "name",
+    "description",
+    "price",
+    "ratings",
+  ]);
   return items;
 };
 
-export const updateCartItemById = async (
-  productId: VerifyIdType,
-  updates: any
-) => {
-  const items = await Cart.findOneAndUpdate(
-    productId,
-    { "product.Quantity": updates.Quantity },
-    { new: true }
-  );
+export const updateCartItemById = async (productId: object, updates: ICart) => {
+  const items = await Cart.findOneAndUpdate(productId, updates, {
+    new: true,
+  }).populate("product", "name");
   return items;
 };
 
-export const deleteCartItemById = async (productId: VerifyIdType) => {
+export const deleteCartItemById = async (productId: object) => {
   const items = await Cart.findOneAndDelete(productId);
   return items;
+};
+
+// when user deleted then delete user's cart items
+export const deleteUserCartItem = async (userId: string) => {
+  const items = await Cart.deleteMany({ userId });
 };

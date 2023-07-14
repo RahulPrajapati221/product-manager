@@ -4,26 +4,28 @@ import {
   updateUserById,
   deleteUserById,
   getUsers,
-  deleteUserAdmin,
   getUsersById,
 } from "./user-service";
 import { validUpdate } from "../../utils/validUpdateField";
 import { Request, Response } from "express";
-import { successMsg, errorMsg, statusCodes, constants } from "../../constant";
+import { successMsg, errorMsg, statusCode, constants } from "../../constant";
 import { successResp, errorResp } from "../../utils/response";
 import { encryptPass } from "../../utils/preOperation";
+import { Role } from "./enum";
+import { deleteUserCartItem } from "../cart/cart-service";
+import { deleteSellerProduct } from "../product/product-service";
 
 //Register user
 export const registerUser = async (req: Request, resp: Response) => {
   try {
-  const userPreData = await encryptPass(req.body);
-  const user = await createUser(userPreData);
-  return successResp(resp, statusCodes.createdCode, {
-    data: user,
-    message: successMsg.created,
-  });
+    const userPreData = await encryptPass(req.body);
+    const user = await createUser(userPreData);
+    return successResp(resp, statusCode.created, {
+      data: user,
+      message: successMsg.created,
+    });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
@@ -32,12 +34,12 @@ export const loginUser = async (req: Request, resp: Response) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await findUser(email, password);
-    return successResp(resp, statusCodes.successCode, {
+    return successResp(resp, statusCode.success, {
       data: { user, token },
       message: successMsg.login,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.unauthorizedCode, errorMsg.badRequest);
+    return errorResp(resp, statusCode.badRequest, errorMsg.badRequest);
   }
 };
 
@@ -45,46 +47,14 @@ export const loginUser = async (req: Request, resp: Response) => {
 export const userProfile = async (req: Request, resp: Response) => {
   try {
     const user = req.body.user;
-    return successResp(resp, statusCodes.successCode, {
+    return successResp(resp, statusCode.success, {
       data: user,
       message: successMsg.success,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
-
-// // logout user
-// export const logOutUser = async (req: Request, resp: Response) => {
-//   try {
-//     const user = req.body.user;
-//     user.tokens = user.tokens.filter((token: { token: string }) => {
-//       return token.token !== req.body.token;
-//     });
-//     await user.updateOne(user);
-//     return successResp(resp, statusCodes.successCode, {
-//       data: user,
-//       message: successMsg.Logout,
-//     });
-//   } catch (err) {
-//     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
-//   }
-// };
-
-// // logout user from all sessions
-// export const logOutAll = async (req: Request, resp: Response) => {
-//   try {
-//     const user = req.body.user;
-//     user.tokens = [];
-//     await user.updateOne(user);
-//     return successResp(resp, statusCodes.successCode, {
-//       data: user,
-//       message: successMsg.Logout,
-//     });
-//   } catch (err) {
-//     return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
-//   }
-// };
 
 // update user
 export const updateUser = async (req: Request, resp: Response) => {
@@ -98,30 +68,40 @@ export const updateUser = async (req: Request, resp: Response) => {
     if (!user) {
       return errorResp(
         resp,
-        statusCodes.notFoundCode,
+        statusCode.notFound,
         errorMsg.notFound(constants.user)
       );
     }
     const User = await updateUserById(user, preUserData);
-    return successResp(resp, statusCodes.createdCode, {
+    return successResp(resp, statusCode.created, {
       data: { Alert: errorMsg.invalidUpdate(invalidField), User },
       message: successMsg.created,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
 // delete user
 export const deleteUser = async (req: Request, resp: Response) => {
   try {
-    const deletedUser = await deleteUserById(req.body.user._id);
-    return successResp(resp, statusCodes.successCode, {
+    const role = req.body.user.role;
+    let userId;
+    if (role === Role.USER || Role.ADMIN) {
+      userId = req.body.user._id;
+    }
+    if (role === Role.SUPERADMIN) {
+      userId = req.params.id;
+    }
+    const deletedUser = await deleteUserById(userId);
+    await deleteUserCartItem(userId);
+    await deleteSellerProduct(userId);
+    return successResp(resp, statusCode.success, {
       data: deletedUser,
       message: successMsg.success,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
@@ -131,44 +111,24 @@ export const deleteUser = async (req: Request, resp: Response) => {
 export const allUsers = async (req: Request, resp: Response) => {
   try {
     const users = await getUsers();
-    return successResp(resp, statusCodes.successCode, {
+    return successResp(resp, statusCode.success, {
       data: users,
       message: successMsg.success,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
 
 // get users by Id --Admin
-export const getAllUsersById = async (req: Request, resp: Response) => {
+export const getUserById = async (req: Request, resp: Response) => {
   try {
     const user = await getUsersById(req.params.id);
-    return successResp(resp, statusCodes.successCode, {
+    return successResp(resp, statusCode.success, {
       data: user,
       message: successMsg.success,
     });
   } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
-  }
-};
-
-// delete users --Admin
-export const deleteUserByAdmin = async (req: Request, resp: Response) => {
-  try {
-    const deletedUser = await deleteUserAdmin(req.params.id);
-    if (!deletedUser) {
-      return errorResp(
-        resp,
-        statusCodes.notFoundCode,
-        errorMsg.notFound(constants.user)
-      );
-    }
-    return successResp(resp, statusCodes.successCode, {
-      data: deletedUser,
-      message: successMsg.success,
-    });
-  } catch (err) {
-    return errorResp(resp, statusCodes.serverErrorCode, errorMsg.serverError);
+    return errorResp(resp, statusCode.serverError, errorMsg.serverError);
   }
 };
