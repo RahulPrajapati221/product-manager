@@ -8,7 +8,7 @@ export const auth = async (
   req: Request,
   resp: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     if (req.header("Authorization")?.includes("Bearer")) {
       const token: string = req
@@ -38,7 +38,7 @@ export const SuperAdmin = async (
   req: Request,
   resp: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const basicAuth = req.header("Authorization")?.replace("Basic ", "")!;
     const [name, pass] = Buffer.from(basicAuth, "base64")

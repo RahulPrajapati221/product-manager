@@ -12,7 +12,7 @@ export const insertCartItem = async (
   return cart;
 };
 
-export const getCartItem = async (userId: string) => {
+export const getCartItem = async (userId: string): Promise<ICart[]> => {
   const items = await Cart.find({ userId }).populate("product", [
     "name",
     "description",
@@ -22,7 +22,9 @@ export const getCartItem = async (userId: string) => {
   return items;
 };
 
-export const getCartItemById = async (productId: object) => {
+export const getCartItemById = async (
+  productId: object
+): Promise<ICart | null> => {
   const items = await Cart.findOne(productId).populate("product", [
     "name",
     "description",
@@ -32,19 +34,24 @@ export const getCartItemById = async (productId: object) => {
   return items;
 };
 
-export const updateCartItemById = async (productId: object, updates: ICart) => {
+export const updateCartItemById = async (
+  productId: object,
+  updates: ICart
+): Promise<ICart | null> => {
   const items = await Cart.findOneAndUpdate(productId, updates, {
     new: true,
   }).populate("product", "name");
   return items;
 };
 
-export const deleteCartItemById = async (productId: object) => {
+export const deleteCartItemById = async (
+  productId: object
+): Promise<ICart | null> => {
   const items = await Cart.findOneAndDelete(productId);
   return items;
 };
 
 // when user deleted then delete user's cart items
-export const deleteUserCartItem = async (userId: string) => {
-  const items = await Cart.deleteMany({ userId });
+export const deleteUserCartItem = async (userId: string): Promise<void> => {
+  await Cart.deleteMany({ userId });
 };

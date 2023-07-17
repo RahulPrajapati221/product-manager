@@ -1,24 +1,26 @@
 import { IProduct } from "./product-type";
 import Product from "./product-model";
 
-export const newProduct = async (reqBody: IProduct) => {
+export const newProduct = async (reqBody: IProduct): Promise<IProduct> => {
   const product = await Product.create(reqBody);
-  return { product };
+  return product;
 };
 
-export const findSellerProduct = async (sellerId: object) => {
+export const findSellerProduct = async (
+  sellerId: object
+): Promise<IProduct[]> => {
   const product = await Product.find({ sellerId });
-  return { product };
+  return product;
 };
 
-export const allProduct = async () => {
+export const allProduct = async (): Promise<IProduct[]> => {
   const product = await Product.find().select([
     "name",
     "description",
     "price",
     "ratings",
   ]);
-  return { product };
+  return product;
 };
 
 export const findProduct = async (
@@ -51,6 +53,6 @@ export const deleteProductById = async (
 };
 
 // When seller deleted then delete Seller's Products
-export const deleteSellerProduct = async (sellerId: string) => {
-  const items = await Product.deleteMany({ sellerId });
+export const deleteSellerProduct = async (sellerId: string): Promise<void> => {
+  await Product.deleteMany({ sellerId });
 };

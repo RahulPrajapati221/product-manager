@@ -8,7 +8,13 @@ import {
 } from "./user-service";
 import { validUpdate } from "../../utils/validUpdateField";
 import { Request, Response } from "express";
-import { successMsg, errorMsg, statusCode, constants } from "../../constant";
+import {
+  successMsg,
+  errorMsg,
+  statusCode,
+  constants,
+  alertMsg,
+} from "../../constant";
 import { successResp, errorResp } from "../../utils/response";
 import { encryptPass } from "../../utils/preOperation";
 import { Role } from "./enum";
@@ -16,7 +22,10 @@ import { deleteUserCartItem } from "../cart/cart-service";
 import { deleteSellerProduct } from "../product/product-service";
 
 //Register user
-export const registerUser = async (req: Request, resp: Response) => {
+export const registerUser = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const userPreData = await encryptPass(req.body);
     const user = await createUser(userPreData);
@@ -30,7 +39,10 @@ export const registerUser = async (req: Request, resp: Response) => {
 };
 
 //User Login
-export const loginUser = async (req: Request, resp: Response) => {
+export const loginUser = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const { email, password } = req.body;
     const { user, token } = await findUser(email, password);
@@ -44,7 +56,10 @@ export const loginUser = async (req: Request, resp: Response) => {
 };
 
 //User profile
-export const userProfile = async (req: Request, resp: Response) => {
+export const userProfile = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const user = req.body.user;
     return successResp(resp, statusCode.success, {
@@ -57,7 +72,10 @@ export const userProfile = async (req: Request, resp: Response) => {
 };
 
 // update user
-export const updateUser = async (req: Request, resp: Response) => {
+export const updateUser = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   const updates = req.body.update;
   const preUserData = await encryptPass(updates);
   const allowedUpdates = ["name", "email", "password", "role"];
@@ -74,7 +92,7 @@ export const updateUser = async (req: Request, resp: Response) => {
     }
     const User = await updateUserById(user, preUserData);
     return successResp(resp, statusCode.created, {
-      data: { Alert: errorMsg.invalidUpdate(invalidField), User },
+      data: { Alert: alertMsg.invalidUpdate(invalidField), User },
       message: successMsg.created,
     });
   } catch (err) {
@@ -83,7 +101,10 @@ export const updateUser = async (req: Request, resp: Response) => {
 };
 
 // delete user
-export const deleteUser = async (req: Request, resp: Response) => {
+export const deleteUser = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const role = req.body.user.role;
     let userId;
@@ -108,7 +129,10 @@ export const deleteUser = async (req: Request, resp: Response) => {
 //-------------super-admin-----------------
 
 // get all users --Admin
-export const allUsers = async (req: Request, resp: Response) => {
+export const allUsers = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const users = await getUsers();
     return successResp(resp, statusCode.success, {
@@ -121,7 +145,10 @@ export const allUsers = async (req: Request, resp: Response) => {
 };
 
 // get users by Id --Admin
-export const getUserById = async (req: Request, resp: Response) => {
+export const getUserById = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const user = await getUsersById(req.params.id);
     return successResp(resp, statusCode.success, {

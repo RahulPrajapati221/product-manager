@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { successMsg, errorMsg, statusCode, constants } from "../../constant";
+import { successMsg, errorMsg, statusCode, constants, alertMsg } from "../../constant";
 import { successResp, errorResp } from "../../utils/response";
 import {
   allProduct,
@@ -13,7 +13,10 @@ import { validUpdate } from "../../utils/validUpdateField";
 import { Role } from "../users/enum";
 
 //Create Product
-export const createProduct = async (req: Request, resp: Response) => {
+export const createProduct = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const { role, _id } = req.body.user;
     if (role === Role.ADMIN) {
@@ -35,7 +38,10 @@ export const createProduct = async (req: Request, resp: Response) => {
 };
 
 //Get All Products
-export const getAllProduct = async (req: Request, resp: Response) => {
+export const getAllProduct = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const products = await allProduct();
     return successResp(resp, statusCode.success, {
@@ -48,7 +54,10 @@ export const getAllProduct = async (req: Request, resp: Response) => {
 };
 
 //Get sellers Products
-export const getSellerProduct = async (req: Request, resp: Response) => {
+export const getSellerProduct = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const role = req.body.user.role;
     if (role === Role.USER) {
@@ -72,7 +81,10 @@ export const getSellerProduct = async (req: Request, resp: Response) => {
 };
 
 // get Product by ID
-export const getProductById = async (req: Request, resp: Response) => {
+export const getProductById = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const role = req.body.user.role;
     if (role === Role.USER) {
@@ -102,7 +114,10 @@ export const getProductById = async (req: Request, resp: Response) => {
 };
 
 // update Product
-export const updateProduct = async (req: Request, resp: Response) => {
+export const updateProduct = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const { role, id } = req.body.user;
     if (role === Role.USER) {
@@ -134,7 +149,7 @@ export const updateProduct = async (req: Request, resp: Response) => {
     }
     const Product = await updateProductById(productId, updates);
     return successResp(resp, statusCode.created, {
-      data: { alert: errorMsg.invalidUpdate(invalidField), Product },
+      data: { alert: alertMsg.invalidUpdate(invalidField), Product },
       message: successMsg.created,
     });
   } catch (err) {
@@ -143,7 +158,10 @@ export const updateProduct = async (req: Request, resp: Response) => {
 };
 
 // delete Product
-export const deleteProduct = async (req: Request, resp: Response) => {
+export const deleteProduct = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   const { role, id } = req.body.user;
   try {
     if (role === Role.USER) {

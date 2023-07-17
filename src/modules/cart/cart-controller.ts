@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { errorResp, successResp } from "../../utils/response";
-import { constants, errorMsg, statusCode, successMsg } from "../../constant";
+import { alertMsg, constants, errorMsg, statusCode, successMsg } from "../../constant";
 import {
   deleteCartItemById,
   getCartItem,
@@ -13,7 +13,10 @@ import { validUpdate } from "../../utils/validUpdateField";
 import { Role } from "../users/enum";
 
 //Insert Products In Cart
-export const insertCart = async (req: Request, resp: Response) => {
+export const insertCart = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   const { _id, role } = req.body.user;
   try {
     if (role === Role.USER) {
@@ -38,7 +41,10 @@ export const insertCart = async (req: Request, resp: Response) => {
 };
 
 //get User Cart Items
-export const userCartItem = async (req: Request, resp: Response) => {
+export const userCartItem = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   const { _id, role } = req.body.user;
   try {
     if (role === Role.USER) {
@@ -62,7 +68,10 @@ export const userCartItem = async (req: Request, resp: Response) => {
 };
 
 //Get Cart Item By Product Id
-export const cartItemById = async (req: Request, resp: Response) => {
+export const cartItemById = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   const { _id, role } = req.body.user;
   try {
     if (role === Role.USER) {
@@ -90,7 +99,10 @@ export const cartItemById = async (req: Request, resp: Response) => {
 };
 
 //Update Cart Item By Product Id
-export const updateCartItem = async (req: Request, resp: Response) => {
+export const updateCartItem = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   try {
     const { role, _id } = req.body.user;
     if (role === Role.USER) {
@@ -110,7 +122,7 @@ export const updateCartItem = async (req: Request, resp: Response) => {
         );
       }
       return successResp(resp, statusCode.created, {
-        data: { alert: errorMsg.invalidUpdate(invalidField), Product },
+        data: { alert: alertMsg.invalidUpdate(invalidField), Product },
         message: successMsg.created,
       });
     }
@@ -121,7 +133,10 @@ export const updateCartItem = async (req: Request, resp: Response) => {
 };
 
 //Delete Cart Item By Product Id
-export const deleteCartItem = async (req: Request, resp: Response) => {
+export const deleteCartItem = async (
+  req: Request,
+  resp: Response
+): Promise<Response<any, Record<string, any>>> => {
   const { _id, role } = req.body.user;
   try {
     if (role === Role.USER) {

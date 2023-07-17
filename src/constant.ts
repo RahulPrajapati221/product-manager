@@ -24,13 +24,15 @@ export const errorMsg = {
   serverError: "There is an internal server error.",
   unauthorized: "Access denied",
   notFound: (value: string) => `${value} Not found, Please try again.`,
+  forbidden: "You don't have permission to access this resource",
+};
+
+export const alertMsg = {
   invalidUpdate: (value: string[]) =>
     !`${value}`
       ? `All fields are correct`
       : `( ' ${value} ' ) are invalid field or Update not allowed`,
-  forbidden: "You don't have permission to access this resource",
 };
-
 export const constants = {
   user: "User",
   product: "product",

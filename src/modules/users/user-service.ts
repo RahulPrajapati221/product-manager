@@ -1,12 +1,12 @@
 import User from "./user-model";
 import { generateToken } from "../../utils/generateToken";
 import { findByCredentials } from "../../utils/findByCredential";
-import { IUser } from "./user-type";
+import { IUser, IUserModel } from "./user-type";
 import { VerifyUserType } from "./user-type";
 
-export const createUser = async (reqBody: IUser) => {
+export const createUser = async (reqBody: IUser): Promise<IUserModel> => {
   const user = await User.create(reqBody);
-  return { user };
+  return user;
 };
 
 export const updateUserById = async (
@@ -35,7 +35,7 @@ export const deleteUserById = async (userId: string): Promise<IUser | null> => {
   return deletedUser;
 };
 
-export const getUsers = async () => {
+export const getUsers = async (): Promise<IUser[]> => {
   const user = await User.find();
   return user;
 };
